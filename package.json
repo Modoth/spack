@@ -1,0 +1,20 @@
+{
+  "name": "@modoth/spack",
+  "version": "0.0.2",
+  "description": "simple packer",
+  "main": "index.js",
+  "bin": "bin/spack.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/Modoth/spack.git"
+  },
+  "author": "modoth",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Modoth/spack/issues"
+  },
+  "homepage": "https://github.com/Modoth/spack#readme"
+}

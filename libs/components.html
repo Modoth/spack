@@ -1,0 +1,206 @@
+<template id="h-stack" view-model>
+  <slot></slot>
+  <style>
+    :host {
+      display: flex;
+      flex-direction: row;
+    }
+  </style>
+</template>
+<template id="v-stack" view-model>
+  <slot></slot>
+  <style>
+    :host {
+      display: flex;
+      flex-direction: column;
+    }
+  </style>
+</template>
+<template id="hv-stack" view-model>
+  <slot></slot>
+  <style>
+    :host {
+      display: flex;
+      flex-direction: column;
+    }
+    @media (orientation: landscape) {
+      :host {
+        flex-direction: row;
+      }
+    }
+  </style>
+</template>
+
+<template id="h-spacer" view-model>
+  <slot></slot>
+  <style>
+    :host {
+      flex: 1;
+      display: flex;
+    }
+  </style>
+</template>
+
+<template id="h-text" view-model>
+  <span inner-text$.="content"></span>
+  <style>
+    :host {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      place-content: center;
+    }
+  </style>
+</template>
+
+<template id="play-button" view-model>
+  <span id="btnPlay" class="play-button" class-pause.="isPlaying"></span>
+  <style>
+    :host {
+      display: block;
+      border-radius: 5px;
+      padding: 3px 10px;
+      background-color: #fff4;
+    }
+    .play-button {
+      display: block;
+      width: 100%;
+      height: 100%;
+      background-color: var(--color);
+      clip-path: polygon(25% 10%, 25% 90%, 95% 50%, 25% 10%);
+      transition: 200ms all ease-in-out;
+    }
+    .play-button.pause {
+      clip-path: polygon(
+        60% 50%,
+        20% 20%,
+        20% 80%,
+        60% 50%,
+        60% 80%,
+        80% 80%,
+        80% 20%,
+        60% 20%
+      );
+    }
+  </style>
+</template>
+
+<template id="menu-bar" view-model>
+  <h-stack>
+    <div class-hidden.="!item.show" class="menu-item" for.="item of menus">
+      <span inner-text$.="item.name" onclick.="item.onclick()"></span>
+    </div>
+  </h-stack>
+  <style>
+    :host {
+      display: block;
+    }
+    h-stack {
+      overflow: hidden;
+    }
+    .menu-item {
+      margin: 5px;
+      background-color: var(--menu-background-color);
+      border-radius: 4px;
+      padding: 2px 5px;
+      color: var(--menu-color);
+      display: flex;
+      justify-content: center;
+      flex: 1;
+    }
+    .menu-item > span {
+      display: block;
+      text-overflow: ellipsis;
+      white-space: pre;
+      overflow: hidden;
+      max-width: 6em;
+    }
+    .hidden {
+      display: none;
+    }
+  </style>
+</template>
+
+<script>
+  class MenuItem {
+    constructor(name = '', onclick = null, show = true) {
+      registerProperties(this, 'name', 'show')
+      this.name = name
+      this.show = show
+      this.onclick = onclick
+    }
+  }
+</script>
+
+<template id="modal-panel" view-model="Modal">
+  <span class-hidden.="!toastMessage" inner-text$.="toastMessage"></span>
+  <style>
+    .hidden {
+      /* left: -100%; */
+      /* transition: ease-in-out 0.05s left; */
+      display: none;
+    }
+    span {
+      color: var(--toast-color, #eee);
+      background-color: var(--toast-background-color, #0008);
+      position: fixed;
+      bottom: 0;
+      margin: 20px auto;
+      left: 50%;
+      transform: translate(-50%, 0);
+      padding: 5px 20px;
+      border-radius: 4px;
+      text-align: center;
+      backdrop-filter: blur(5px);
+    }
+  </style>
+</template>
+<script>
+  class Modal {
+    constructor() {
+      /**@type { Object.<string,HTMLElement> } */
+      this.components
+      /**@type { Storage | {  } } */
+      this.storage
+      registerProperties(this, 'toastMessage')
+    }
+    toast(/**@string */ msg, /**@type number */ timeout = 1000) {
+      return new Promise((resolve) => {
+        this.toastMessage = msg
+        setTimeout(() => {
+          this.toastMessage = null
+          resolve()
+        }, timeout)
+      })
+    }
+  }
+</script>
+<template id="pop-up" view-model="Popup">
+  <div class="popup">
+    <slot></slot>
+  </div>
+  <style>
+    :host {
+      display: block;
+      position: relative;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      right: 0;
+      position: fixed;
+      background: #0008;
+      backdrop-filter: blur(5px);
+    }
+    .popup {
+      max-width: 99%;
+      max-height: 99%;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+  </style>
+</template>
+<script>
+  class Popup {}
+</script>

@@ -1,0 +1,13 @@
+<script src="./app.js"></script>
+<template id="app-main" view-model="App">
+  <div inner-text$.="title"></div>
+  <modal-panel id="modal"></modal-panel>
+  <style>
+    :host {
+      display: block;
+    }
+  </style>
+</template>
+<script>
+  window.appData = window.appData || /**@imports json */ './app-data.json'
+</script>
