@@ -61,7 +61,7 @@ class FileUtils {
     })
   }
 
-  static cp(source, destination, options){
+  static cp(source, destination, options) {
     return new Promise((resolve, reject) => {
       fs.cp(source, destination, options, (err) => {
         if (err) {
@@ -325,7 +325,7 @@ class BufferImporter {
 }
 
 class ImportContext {
-  constructor(workdir, { replceSurfix = '',libsRoot }) {
+  constructor(workdir, { replceSurfix = '', libsRoot }) {
     /** @type string[] */
     this.modules = []
     /** @type string[] */
@@ -335,11 +335,11 @@ class ImportContext {
     this.addedModules = new Set()
     this.workdir = workdir
     this.dependentedBys = {}
-    
-    this.replaceFile_ = async (filepath, relativeFile)=>{
+
+    this.replaceFile_ = async (filepath, relativeFile) => {
       let files = []
-      const addReplaceFile = (fp) =>{
-        if(!replceSurfix){
+      const addReplaceFile = (fp) => {
+        if (!replceSurfix) {
           return
         }
         files.join(path.join(
@@ -347,21 +347,21 @@ class ImportContext {
           replceSurfix + path.basename(fp)
         ))
       }
-      if(libsRoot && !path.isAbsolute(filepath)){
+      if (libsRoot && !path.isAbsolute(filepath)) {
         const fullpath = path.join(libsRoot, filepath)
         addReplaceFile(fullpath)
         files.push(fullpath)
       }
-      if(relativeFile){
+      if (relativeFile) {
         const fullpath = path.join(path.dirname(relativeFile), filepath)
         addReplaceFile(fullpath)
         files.push(fullpath)
-      }else{
+      } else {
         addReplaceFile(filepath)
         files.push(filepath)
       }
-      
-      for(const f of files){
+
+      for (const f of files) {
         if (await FileUtils.exists(f)) {
           return f
         }
@@ -1022,10 +1022,10 @@ Connection: Upgrade
 }
 
 const cmds = {
-  help: {name:'help', summary:''},
-  create: {name:'create', summary:'<appName> <templateName>'},
-  publish: {name:'publish', summary:''},
-  serve: {name:'serve', summary:'[--watch]'}
+  help: { name: 'help', summary: '' },
+  create: { name: 'create', summary: '<appName> <templateName>' },
+  publish: { name: 'publish', summary: '' },
+  serve: { name: 'serve', summary: '[--watch]' }
 }
 
 const main = async () => {
@@ -1041,28 +1041,28 @@ const main = async () => {
   const entries = Object.keys(config.entries).map((name) =>
     Object.assign({ name }, config.entries[name])
   )
-  const noEntriesError = () =>{
+  const noEntriesError = () => {
     console.log("No sources found, create command to generate one.")
   }
-  const showHelp = ()=>{
+  const showHelp = () => {
     console.log(`Usage:\n
-${Object.values(cmds).map(({name, summary}) => `${name}\t${summary}`).join('\n')}
+${Object.values(cmds).map(({ name, summary }) => `${name}\t${summary}`).join('\n')}
       `)
   }
   switch (cmd) {
     case cmds.publish.name:
-      if(!entries.length){
+      if (!entries.length) {
         noEntriesError()
         return
       }
       await new Publisher(config.cd).publish(
         entries,
-        await packer.pack(workdir, config.entries, config.output.filename, null, { libsRoot:config.libsRoot }),
+        await packer.pack(workdir, config.entries, config.output.filename, null, { libsRoot: config.libsRoot }),
         config.output.path
       )
       return
     case cmds.serve.name: {
-      if(!entries.length){
+      if (!entries.length) {
         noEntriesError()
         return
       }
@@ -1075,34 +1075,34 @@ ${Object.values(cmds).map(({name, summary}) => `${name}\t${summary}`).join('\n')
           config.entries,
           config.output.filename,
           watch && server.updateResult.bind(server),
-          { replceSurfix: '.local.', libsRoot:config.libsRoot }
+          { replceSurfix: '.local.', libsRoot: config.libsRoot }
         )
       )
       return
     }
-    case cmds.create.name:{
+    case cmds.create.name: {
       const appName = args[0]
       const templateName = args[1] || config.defaultTemplate
-      if(!templateName || !appName){
+      if (!templateName || !appName) {
         showHelp()
         return
       }
       const templates = config.templates
       const templatePath = path.join(templates, templateName)
-      if(! await FileUtils.exists(templatePath)){
+      if (! await FileUtils.exists(templatePath)) {
         console.error(`No such template ${templateName}`)
         return
       }
-      const srcPath = path.join(workdir, 'src') 
+      const srcPath = path.join(workdir, 'src')
       const appPath = path.join(srcPath, appName)
-      if(await FileUtils.exists(appPath)){
+      if (await FileUtils.exists(appPath)) {
         console.error(`App already existed ${appPath}`)
         return
       }
-      await FileUtils.cp(templatePath, appPath, {recursive: true})
+      await FileUtils.cp(templatePath, appPath, { recursive: true })
       break
     }
-    default:{
+    default: {
       showHelp()
     }
   }

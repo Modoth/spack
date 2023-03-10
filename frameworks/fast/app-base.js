@@ -1,127 +1,131 @@
 import { sleep } from 'sleep.js'
 
 export class AppBase {
-  async launch () {
-    this.storage = this.initStorage_()
-    this.data = await this.initData(window.appData)
-    window.app = this
-    await this.start()
+  async launch() {
+    if (this.launched) {
+      return;
+    }
+    this.launched = true;
+    this.storage = this.initStorage_();
+    this.data = await this.initData(window.appData);
+    window.app = this;
+    await this.start();
   }
 
-  async registerStorageProperties (...props) {
+  async registerStorageProperties(...props) {
     if (!this.storage) {
-      return
+      return;
     }
-    let asyncTimeout = 50
-    const bgTimeout = 200
+    let asyncTimeout = 50;
+    const bgTimeout = 200;
     for (const [prop, defaultValue, onchange] of props) {
-      let propValue
-      let valueModified = false
-      let successLoadFromStorage = false
-      let loadFunc
-      let bgLoad = false
+      let propValue;
+      let valueModified = false;
+      let successLoadFromStorage = false;
+      let loadFunc;
+      let bgLoad = false;
       const mergeValue = (savedValue) => {
         if (successLoadFromStorage) {
-          return
+          return;
         }
-        successLoadFromStorage = true
+        successLoadFromStorage = true;
         if (!valueModified) {
-          valueModified = true
-          propValue = savedValue
+          valueModified = true;
+          propValue = savedValue;
         } else {
           // merge strategy
-          propValue = savedValue
+          propValue = savedValue;
         }
         if (bgLoad && onchange) {
-          onchange()
+          onchange();
         }
-      }
+      };
       loadFunc = async () => {
-        const jsonStr = await this.storage.getItem(prop)
-        let savedValue
+        const jsonStr = await this.storage.getItem(prop);
+        let savedValue;
         if (!jsonStr) {
-          savedValue = defaultValue
+          savedValue = defaultValue;
         } else {
           try {
-            savedValue = JSON.parse(jsonStr)
+            savedValue = JSON.parse(jsonStr);
           } catch {
-            savedValue = defaultValue
+            savedValue = defaultValue;
           }
         }
-        mergeValue(savedValue)
-      }
+        mergeValue(savedValue);
+      };
       const tryLoad = async () => {
-        bgLoad = true
-        const func = loadFunc
-        loadFunc = null
+        bgLoad = true;
+        const func = loadFunc;
+        loadFunc = null;
         await Promise.race([
           func(),
           sleep(bgTimeout).then(() => {
             if (!successLoadFromStorage) {
-              loadFunc = func
+              loadFunc = func;
             }
-          })
-        ])
-      }
+          }),
+        ]);
+      };
       await Promise.race([
         loadFunc(),
         sleep(asyncTimeout).then(() => {
           if (!valueModified) {
-            propValue = defaultValue
-            valueModified = true
-            asyncTimeout = 0
+            propValue = defaultValue;
+            valueModified = true;
+            asyncTimeout = 0;
           }
-        })
-      ])
+        }),
+      ]);
       Object.defineProperty(this, prop, {
-        get () {
+        get() {
           if (loadFunc) {
-            tryLoad()
+            tryLoad();
           }
-          return propValue
+          return propValue;
         },
-        set (newValue) {
-          propValue = newValue
+        set(newValue) {
+          propValue = newValue;
           if (successLoadFromStorage) {
-            this.storage.setItem(prop, JSON.stringify(propValue))
+            this.storage.setItem(prop, JSON.stringify(propValue));
           }
-        }
-      })
+        },
+      });
     }
   }
 
-  initStorage_ () {
+  initStorage_() {
     if (window.$localStorage) {
-      return window.$localStorage
+      return window.$localStorage;
     }
     try {
-      const s = window.localStorage
-      return s
+      const s = window.localStorage;
+      return s;
     } catch {
       return {
-        getItem: () => '',
-        setItem: () => true
-      }
+        getItem: () => "",
+        setItem: () => true,
+      };
     }
   }
 
-  async initData (data) {
-    return data
+  async initData(data) {
+    return data;
   }
 
-  async start () {
-    console.log('start')
+  async start() {
+    console.log("start");
   }
 
-  async pause () {
-    console.log('pause')
+  async pause() {
+    console.log("pause");
   }
 
-  async resume () {
-    console.log('pause')
+  async resume() {
+    console.log("pause");
   }
 
-  async stop () {
-    console.log('stop')
+  async stop() {
+    console.log("stop");
   }
 }

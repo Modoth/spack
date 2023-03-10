@@ -8,18 +8,30 @@
   import { registerElement, registerProperties } from './register-element.js'
   import { AppBase } from '../fast/app-base.js'
   window.onload = async () => {
-    Object.setPrototypeOf(App.prototype, AppBase.prototype)
-    for (const template of document.querySelectorAll(
-      'template[id][view-model]'
-    )) {
-      const tagName = template.getAttribute('id')
-      if (!tagName) {
-        continue
+    let currentClass = App;
+    while (true) {
+      let baseClass = Object.getPrototypeOf(currentClass);
+      if (
+        !baseClass ||
+        Object.getPrototypeOf(Object) === Object.getPrototypeOf(currentClass)
+      ) {
+        break;
       }
-      const codeBehind = template.getAttribute('view-model')
-      registerElement(tagName, codeBehind)
+      currentClass = baseClass;
     }
-  }
+    Object.setPrototypeOf(currentClass.prototype, AppBase.prototype);
+    for (const template of document.querySelectorAll(
+      "template[id][view-model]"
+    )) {
+      const tagName = template.getAttribute("id");
+      if (!tagName) {
+        continue;
+      }
+      const codeBehind = template.getAttribute("view-model");
+      registerElement(tagName, codeBehind);
+    }
+    delayDispatcher.start();
+  };
 </script>
 
 <style>

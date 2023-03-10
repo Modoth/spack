@@ -20,7 +20,7 @@ class FileUtils {
     })
   }
 
-static exists(file) {
+  static exists(file) {
     return new Promise((resolve) => {
       fs.exists(file, resolve)
     })
@@ -32,10 +32,11 @@ const getLocalConfigs = async () => {
   const root = path.dirname(path.dirname(require.main.filename))
   const srcFolder = path.join(workdir, 'src')
   const subfolders = (await FileUtils.exists(srcFolder)) ? (await FileUtils.readdir(srcFolder)) : []
+  const frameworks = await FileUtils.readdir(path.join(root, 'frameworks'))
   const entries = {}
   let localCfg
   const localCfgFile =
-    process.env.SPACK_CONFIG_FILE || './.local.spack.config.js'
+    process.env.SPACK_CONFIG_FILE || './.spack.config.js'
   if (localCfgFile && (await FileUtils.exists(localCfgFile))) {
     try {
       localCfg = require(localCfgFile)
@@ -46,25 +47,16 @@ const getLocalConfigs = async () => {
   for (const subfolder of subfolders) {
     let indexFile
     let template
-    let extractCss = true
+    let extractCss = false
     const includeTemplate = false
-    let monolith = false
-    for (const fileName of ['index.html', 'app.html']) {
-      const file = path.join(srcFolder, subfolder, fileName)
+    let monolith = true
+    for (const fm of frameworks) {
+      const file = path.join(srcFolder, subfolder, `${fm}-app.html`)
       if (await FileUtils.exists(file)) {
         indexFile = file
-        switch (fileName) {
-          case 'app.html':
-            template = path.join(root, 'frameworks/fast/index.html')
-            extractCss = false
-            monolith = true
-            break
-        }
+        template = path.join(root, `frameworks/${fm}/index.html`)
         break
       }
-    }
-    if (subfolder === 'fast') {
-      extractCss = false
     }
     if (!indexFile) {
       continue
@@ -74,16 +66,17 @@ const getLocalConfigs = async () => {
       localCfg && localCfg.entries && localCfg.entries[subfolder]
     )
   }
-  const dist = localCfg && localCfg.dist
+  const dist = (localCfg && localCfg.dist) || 'dist'
+  const templates = path.join(root, 'templates')
   return {
     libsRoot: path.join(root, 'libs'),
-    templates: path.join(root, 'templates'),
-    defaultTemplate: 'fast',
+    templates,
+    defaultTemplate: (await FileUtils.readdir(templates))[0],
     cd: (localCfg && localCfg.cd) || {},
     dist,
     entries,
-    output: {
-      path: path.join(workdir, dist || 'dist'),
+    output: localCfg?.output || {
+      path: path.join(workdir, dist),
       filename: '[name]'
     }
   }
