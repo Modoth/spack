@@ -1013,7 +1013,7 @@ Connection: Upgrade
           .filter((s) => s)
         this.resApi(res, ...tokens)
       } else {
-        this.resFile(res, req.url.replace(/^\//, ''))
+        this.resFile(res, decodeURI(req.url).replace(/^\//, ''))
       }
       res.end()
     })
