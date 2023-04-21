@@ -1,7 +1,10 @@
 name: Publish Package to npmjs
 on:
-  release:
-    types: [published]
+  push:
+    branches:
+      - 'main'
+    paths:
+      - 'package.json'
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -12,7 +15,6 @@ jobs:
         with:
           node-version: '18.x'
           registry-url: 'https://registry.npmjs.org'
-      - run: npm ci
       - run: npm publish --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
